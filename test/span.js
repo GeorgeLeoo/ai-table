@@ -49,6 +49,7 @@ const config = [
 
 
 let reuslt = []
+let mDeep = 0
 
 function fn(config) {
   let deep = 0
@@ -66,7 +67,9 @@ function fn(config) {
     }
   }
   getMaxDeep(config)
-
+  if (maxDeep > mDeep) {
+    mDeep = maxDeep
+  }
   let deep1 = 0
   function getMaxDeep1(thConfig) {
     deep1 += thConfig.length
@@ -88,24 +91,51 @@ function fn(config) {
     } else {
       configElement.rowspan = maxDeep
       configElement.colspan = 1
-      if (!reuslt[i]) {
-        reuslt[i] = [{
+    }
+  }
+}
+
+fn(config)
+
+for (let j = 0; j < mDeep; j++) {
+  if (j === 0) {
+    for (let i = 0; i < config.length; i++) {
+      const configElement = config[i]
+      if (!reuslt[j]) {
+        reuslt[j] = [{
           label: configElement.label,
           rowspan: configElement.rowspan,
           colspan: configElement.colspan,
         }]
       } else {
-        reuslt[i].push({
+        reuslt[j].push({
           label: configElement.label,
           rowspan: configElement.rowspan,
           colspan: configElement.colspan,
         })
       }
     }
+  } else {
+    for (let i = 0; i < config.length; i++) {
+      const configElement = config[i]
+      if (isArray(configElement.children) && configElement.children.length > 0) {
+        if (!reuslt[j]) {
+          reuslt[j] = [{
+            label: configElement.label,
+            rowspan: configElement.rowspan,
+            colspan: configElement.colspan,
+          }]
+        } else {
+          reuslt[j].push({
+            label: configElement.label,
+            rowspan: configElement.rowspan,
+            colspan: configElement.colspan,
+          })
+        }
+      }
+    }
   }
 }
-
-fn(config)
 
 // console.log(JSON.stringify(config, 2, 2))
 console.log(JSON.stringify(reuslt, 2, 2))
