@@ -1,0 +1,25 @@
+@font-face {font-family: "iconfont";
+  src: url('./iconfont.eot?t=1605079919632'); /* IE9 */
+  src: url('./iconfont.eot?t=1605079919632#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('data:application/x-font-woff2;charset=utf-8;base64,d09GMgABAAAAAAOkAAsAAAAAB5QAAANWAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEIGVgCDBgqDAIMCATYCJAMMCwgABCAFhG0HNBvGBhHVm1fIvsZkyJj6QojZkdaFuQEmnhn7dWLB/zhyQAIJFAAAAAAQQbX2b8/ufgKQ30LCFlABqqiUJ1KANpJQYvlEKHJPpSL0/bTffIhaiPj9hjZoE5ELZSr354ZJg2X+kmkqS1va1ruEsvQRi1Tt7xXZIT6G5QIPYSUqusEB6WDjsLS+6bzQd1oLGZQw8f9/r+p/GVtgXqC4zLE1lBPAcIACtnfnFG5FKuYdxm6iPIjTBJqNWxU77EQTCBVgUiDOxaP9IEyZlJrq0CjUl6wsOe7iaUy30w8Ad/jvxz/wxIakLgMz95yND0GoVk2YL1XQRTHi8RzQ1pGxikIcLXUdwQlTq7JmR8WtL65XhDRWtKrgIldRD//hkQRRD1S2gkUpnajxsShWC0XJWVdmUC+WXQC+A2D0Kshyl8qG4q2/4kVqHbYFpP3KQJhWVOGjg/+W1rPLCq1tajnNlRZ1zU3HF+UtQ2vzSb56pe/siKBPAoMvEWFnIr5BWJ68vKzoxdPHL3IlLTQ/fHZR1kkml8r5quHR/jtVD6fm5lLheioyPx9JQS2JzdsjNcAzeB+kqQuCJicROBfmY0yoy02EJ4MuKLLTtQ6SxOQybgbs83324JSeCHO4s8bNRbdwnMQvdozmmL+LDI7m5PeIz+SplOJuqv7hlLevI4lMYoIuBm3EyCWi8eTmjIjaa8cB0/ieNfneGNnkPki/fnuQb/KOYWTp6aR0chygOv+S10Fl/pn/RSDY9emt61X0L1TAr59WIVhZaF+mUUIT/ydV8VqKKwXJXFAjxCLRk23ecyKhGZr5O7XQ7W9/Tx+xIzTqYhGSBmOQNZpFhbgKdVqsQb1Gm9Bsxe71LXqcxxGlCcuuCxA6vYWk3TfIOv1EhfgH6vT7D/zKJeaw8437jnuPiHcGocsYgDdC7JeFQFbeBdVPDNvMpaSUM79ITRwFVVKyWQcLpDHmNF2oMQsQVOZgC+dhlpVQUZmgz1LEXOmyLMreSPLLfLJjIMjFUAB4RiDmKxUE7cx2uZ9/QqFWxkU1TR3eL0Qace9AJVFaIEdVtGq6loc0OiENYwIQSCkHbGEYymRKoCoflkA+Jol6JCo6GbYTbVXS/Jr8+XZBM9A/R4ocxfw0ZgvsVCcTAAA=') format('woff2'),
+  url('./iconfont.woff?t=1605079919632') format('woff'),
+  url('./iconfont.ttf?t=1605079919632') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+  url('./iconfont.svg?t=1605079919632#iconfont') format('svg'); /* iOS 4.1- */
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-del:before {
+  content: "\e508";
+}
+
+.icon-del1:before {
+  content: "\e506";
+}
+

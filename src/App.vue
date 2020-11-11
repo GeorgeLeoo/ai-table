@@ -16,39 +16,70 @@ export default {
       tableOptions: {
         width: '',
         background: '',
-        defaultConfig: {},
+        fontSize: '16px',
+        initRows: 5,
         config: [
           {
-            label: '日期',
-            prop: 'quantity'
+            label: '摘要',
+            prop: 'abstract',
+            width: '240px',
+            tip: '摘要',
+            canEdit: true,
           },
           {
-            label: '配送信息',
-            prop: 'quantity',
-            children: [
-              {
-                label: '姓名',
-                prop: 'quantity',
-              },
-              {
-                label: '地址',
-                prop: 'quantity'
-              },
-            ]
+            label: '会计科目',
+            prop: 'subject',
+            width: '240px',
+            tip: '科目',
+            canEdit: true,
+            canSelect: true,
+          },
+          {
+            label: '借方金额',
+            prop: 'debtorMoney',
+            type: 'money',
+            fontSize: '14px',
+            canEdit: true,
+            editSize: '20px',
+            editPosition: 'right',
+          },
+          {
+            label: '贷方金额',
+            prop: 'creditorMoney',
+            type: 'money',
+            fontSize: '14px',
+            canEdit: true,
+            editSize: '20px',
+            editPosition: 'right',
           },
         ],
         data: [
           {
-            prop: 'ff',
-            value: 'hh'
+            abstract: '23',
+            subject: 'eqw',
+            debtorMoney: '2',
+            creditorMoney: '4324323.34',
           },
           {
-            prop: 'quantity',
-            value: '453'
+            abstract: '312321312312314324324232',
+            subject: 'ytuu',
+            debtorMoney: '72',
+            creditorMoney: '42343.22',
           },
         ]
       }
     }
+  },
+  mounted() {
+    setTimeout(() => {
+      // this.tableOptions.config.push({
+      //   label: '摘要33',
+      //   prop: 'abstract',
+      //   width: '240px',
+      //   tip: '摘要',
+      //   canEdit: true,
+      // })
+    }, 3000)
   }
 }
 </script>
@@ -73,11 +104,15 @@ ul {
 }
 
 li {
-  display: inline-block;
+  //display: inline-block;
   margin: 0 10px;
 }
 
 a {
   color: #42b983;
+}
+p {
+  margin: 0;
+  padding: 0;
 }
 </style>

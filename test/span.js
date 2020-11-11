@@ -97,19 +97,19 @@ const config = [
 //
 // fn(config)
 
-let maxDeep = 0
-function getDeep(_root) {
-  let _maxDeep = 0
-  for (let i = 0; i < _root.length; i++) {
-    if (isArray(_root[i].children) && _root[i].children.length > 0) {
-      _maxDeep += getDeep(_root[i].children)
-    }
-  }
-  console.log(_maxDeep)
-  return _maxDeep
-}
-let deep = getDeep(config)
-console.log('last', deep)
+// let maxDeep = 0
+// function getDeep(_root) {
+//   let _maxDeep = 0
+//   for (let i = 0; i < _root.length; i++) {
+//     if (isArray(_root[i].children) && _root[i].children.length > 0) {
+//       _maxDeep += getDeep(_root[i].children)
+//     }
+//   }
+//   console.log(_maxDeep)
+//   return _maxDeep
+// }
+// let deep = getDeep(config)
+// console.log('last', deep)
 
 /**
  * 删除对象的某些属性
@@ -172,8 +172,8 @@ function levelOrder(root) {
   }
 }
 
-// levelOrder(config)
+levelOrder(config)
 
 
 // console.log(JSON.stringify(config, 2, 2))
-// console.log(JSON.stringify(reuslt, 2, 2))
+console.log(JSON.stringify(reuslt, 2, 2))

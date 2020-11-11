@@ -1,0 +1,23 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "9886675",
+      "name": "添加",
+      "font_class": "del",
+      "unicode": "e508",
+      "unicode_decimal": 58632
+    },
+    {
+      "icon_id": "12728076",
+      "name": "添加",
+      "font_class": "del1",
+      "unicode": "e506",
+      "unicode_decimal": 58630
+    }
+  ]
+}
