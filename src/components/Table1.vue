@@ -1,47 +1,28 @@
 <template>
-  <div ref="ai-table" class="ai-table" :style="tableStyle">
-    <!--    <div class="ai-table_main">-->
-    <!--  表头  -->
-    <div class="ai-table_content ai-table_header" :style="tableHeaderStyle">
-      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0">
+  <div class="ai-table-wrapper">
+    <div class="ai-table-header">
+      <table class="ai-table-header-body" cellspacing="0" cellpadding="0" border="0">
         <colgroup>
-          <col class="ai-table_col--operation">
-          <col v-for="item in headColList" :key="item.key" :width="item.width">
+          <col class="ai-table-left">
+          <col v-for="(item, index) in config" :key="index" :style="setColStyle(item)">
         </colgroup>
+        <!--  表头  -->
         <thead>
         <tr>
-          <td colspan="1" rowspan="1" class="ai-table_operation">
-            <div class="operation"></div>
-          </td>
-          <th v-for="(item, index) in headList" :key="index" class="border-top-left border-bottom">
-            <div class="table-header_cell" :style="item.style">
-              <span class="ai-table_header_cell--text">{{item.label}}</span>
-              <img v-if="item.help && item.help.content" class="icon" src="../assets/add.png" alt=""
-                   @mouseover="handlerHelpMouseOver(item.help)"
-                   @mouseout="handlerHelpMouseOut">
-            </div>
-            <div v-if="item.isMoney" class="money-unit border-top">
+          <th class=""></th>
+          <th v-for="(item, index) in config" :key="index" class="border-top-left border-bottom">
+            <div class="table-header-cell" :style="setHeaderCellStyle(item)">{{item.label}}</div>
+            <div v-if="item.type === TABLE_CELL_TYPE_MAP.MONEY" class="money_unit" :class="['border-top']">
                 <span v-for="(unit, unitIndex) in MONEY_UNIT_LIST" :key="unitIndex"
-                      class="money-unit_item">{{unit}}</span>
+                      class="money_unit_item">{{unit}}</span>
             </div>
           </th>
         </tr>
         </thead>
-      </table>
-    </div>
-    <!--  表体  -->
-    <div class="ai-table_content">
-      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0">
-        <colgroup>
-          <col class="ai-table_col--operation">
-          <col v-for="item in headColList" :key="item.key" :width="item.width">
-        </colgroup>
         <!--  表体  -->
         <tbody>
-        <tr v-for="(item, index) in tableData" :key="index" class="table-body-tr"
-            @mouseover="handlerMouseOver(index)"
-            @mouseout="handlerMouseOut(index)">
-          <td colspan="1" rowspan="1" class="ai-table_operation">
+        <tr v-for="(item, index) in tableData" :key="index" class="table-body-tr" @mouseover="handlerMouseOver(index)">
+          <td colspan="1" rowspan="1" class="table-body-operation">
             <div v-if="mouseoverIndex === index" class="operation">
               <img class="icon" src="../assets/add.png" alt="" @click="handlerRowAdd(index)">
               <img class="icon" src="../assets/del.png" alt="" @click="handlerRowDel(index)">
@@ -49,13 +30,13 @@
           </td>
           <td v-for="(cell, i) in transformToArray(item)" :key="i" colspan="1" rowspan="1"
               class="table-body-td border-left border-bottom" @click="handlerCellClick($event, index, i)">
-            <div class="table-body-cell" :class="[moneyIndexs.includes(i) ? 'money-unit' : '']">
+            <div class="table-body-cell" :class="[moneyIndexs.includes(i) ? 'money_unit' : '']">
               <input v-if="cellClickIndex.row === index && cellClickIndex.col === i" ref="ai-table-body-cell-input"
                      class="table-body-cell-input" :style="getEditStyle()"
                      autofocus type="text" :value="cell" @input="handlerCellInput" @keyup.enter="handlerCellInputEnter">
               <!--              <template v-else>-->
               <!--       金额         -->
-              <div v-if="headList[i] && headList[i].type === TABLE_CELL_TYPE_MAP.MONEY"
+              <div v-if="config[i] && config[i].type === TABLE_CELL_TYPE_MAP.MONEY"
                    class="table-body-cell-main--money"
                    :class="[cell.length > 11 ? 'lspace-none' : '', cell.includes('-') ? 'red' : '']">
                 {{cell | formateMoney}}
@@ -64,29 +45,18 @@
               <div v-else class="table-body-cell-main">{{cell}}</div>
               <!--              </template>-->
               <!--       单元格右侧文案         -->
-              <div v-if="mouseoverIndex === index && headList[i].tip"
-                   class="table-body-cell-tip">{{headList[i].tip}}
+              <div v-if="mouseoverIndex === index && config[i].tip"
+                   class="table-body-cell-tip">{{config[i].tip}}
               </div>
             </div>
           </td>
         </tr>
         </tbody>
-      </table>
-    </div>
-    <!--  表尾  -->
-    <div class="ai-table_content">
-      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0">
-        <colgroup>
-          <col class="ai-table_col--operation">
-          <col v-for="item in headColList" :key="item.key" :width="item.width">
-        </colgroup>
         <tfoot>
         <tr class="table-body-tr-summary">
-          <td colspan="1" rowspan="1" class="ai-table_operation"></td>
-          <td v-for="(item, i) in tableFooter" :key="i" class="table-body-td"
-              :class="[item ? 'border-left border-bottom': 'border-bottom']">
-            <div class="table-body-cell"
-                 :class="[((item && item.type) === TABLE_CELL_TYPE_MAP.MONEY) ? 'money-unit' : '']">
+          <td colspan="1" rowspan="1" class="table-body-operation"></td>
+          <td v-for="(item, i) in tableFooter" :key="i" class="table-body-td" :class="[item ? 'border-left border-bottom': 'border-bottom']">
+            <div class="table-body-cell" :class="[((item && item.type) === TABLE_CELL_TYPE_MAP.MONEY) ? 'money_unit' : '']">
               <div v-if="item && item.value && (item.type === TABLE_CELL_TYPE_MAP.MONEY)"
                    class="table-body-cell-main--money"
                    :class="[item.value.length > 11 ? 'lspace-none' : '', item.value.includes('-') ? 'red' : '']">
@@ -100,9 +70,7 @@
         </tfoot>
       </table>
     </div>
-    <!--    </div>-->
     <Select v-if="showSelect" :select-style="selectStyle"/>
-    <!--    <Popover v-if="popOverContent.content" :data="popOverContent"></Popover>-->
   </div>
 </template>
 
@@ -110,7 +78,6 @@
 import {isArray} from "../utils/dataType";
 import Thead from "./Thead";
 import Select from "./Select";
-// import Popover from "./Popover";
 import {MONEY_UNIT_LIST, TABLE_CELL_TYPE_MAP, TABLE_ROW_DATA} from "../constant";
 import {getStyle} from "../utils";
 
@@ -118,8 +85,7 @@ export default {
   name: "Table",
   components: {
     Thead,
-    Select,
-    // Popover
+    Select
   },
   props: {
     options: {
@@ -130,12 +96,12 @@ export default {
       validator: (value) => {
         // 是否满足条件
         let isMeetConditions = false
-        // 是否是正确的headList配置
-        let isRightHeadList = isArray(value.headList) && value.headList.length > 0
+        // 是否是正确的config配置
+        let isRightConfig = isArray(value.config) && value.config.length > 0
         // 是否是正确的data配置
         let isRightData = isArray(value.data)
-        // 还要验证headList和data的结构是否正确
-        if (isRightHeadList && isRightData) {
+        // 还要验证config和data的结构是否正确
+        if (isRightConfig && isRightData) {
           isMeetConditions = true
         }
         return isMeetConditions
@@ -147,7 +113,7 @@ export default {
       TABLE_CELL_TYPE_MAP,
       MONEY_UNIT_LIST,
       // 默认cell宽度
-      defaultWidth: 222,
+      defaultWidth: '150px',
       defaultFontSize: '22px',
       mouseoverIndex: -1,
       cellClickIndex: {
@@ -159,92 +125,33 @@ export default {
       showSelect: false,
       tableData: [],
       tableFooter: [],
-      tableFooterProps: [],
-      popOverContent: '',
+      tableFooterProps: []
     }
   },
   computed: {
-    // 表头配置
-    headList() {
-      const headList = this.options.headList
-      const final = []
-      for (const item of headList) {
-        final.push({
-          ...item,
-          style: this.setHeaderCellStyle(item),
-          isMoney: item.type === TABLE_CELL_TYPE_MAP.MONEY
-        })
-      }
-      return final
-    },
-    /**
-     * 表头col渲染
-     */
-    headColList() {
-      const final = []
-      for (const item of this.headList) {
-        final.push({
-          key: item.prop,
-          width: this.setColWidth(item),
-          _origin: item
-        })
-      }
-      return final
-    },
-    /**
-     * table 的样式
-     */
-    tableStyle() {
-      const style = {}
-      if (this.options.height) {
-        style.height = this.options.height
-      }
-      if (this.options.fixed) {
-        style.position = 'sticky'
-      }
-      return style
-    },
-    /**
-     * table 表头 的样式
-     */
-    tableHeaderStyle() {
-      const style = {}
-      if (this.options.fixed) {
-        style.position = 'sticky'
-      }
-      return style
+    // 配置
+    config() {
+      return this.options.config
     },
     summary() {
       return this.options.summary
     },
     tableHeadProp() {
       const props = {}
-      for (const ele of this.options.headList) {
+      for (const ele of this.options.config) {
         props[ele.prop] = ele.prop
       }
       return props
     },
     moneyIndexs() {
       const indexs = []
-      this.options.headList.forEach((item, index) => {
+      this.options.config.forEach((item, index) => {
         if (item.type === TABLE_CELL_TYPE_MAP.MONEY) {
           indexs.push(index)
         }
       })
       return indexs
     },
-    calcRestWidth() {
-      let sumWidth = 0
-      let totalWidth = ''
-      console.log(this.$refs['ai-table'])
-      for (const ele of this.headList) {
-        if (ele.type === TABLE_CELL_TYPE_MAP.MONEY) {
-          sumWidth += 220
-        } else if (ele.width) {
-          sumWidth = parseInt(ele.width)
-        }
-      }
-    }
   },
   watch: {
     tableData: {
@@ -281,12 +188,6 @@ export default {
     this.tableFooter = this.getTableFooter()
   },
   methods: {
-    handlerHelpMouseOut() {
-      // this.popOverContent = ''
-    },
-    handlerHelpMouseOver(help) {
-      // this.popOverContent = help
-    },
     calcSummaryData() {
       this.tableData.forEach(row => {
         this.tableFooter.forEach(value => {
@@ -310,8 +211,8 @@ export default {
           if (isArray(this.summary[summaryKey])) {
             this.summary[summaryKey].forEach(item => {
               this.tableFooterProps.push(item.prop)
-              let propIndexInheadList = this.headList.findIndex(value => value.prop === item.prop)
-              final[propIndexInheadList] = {
+              let propIndexInConfig = this.config.findIndex(value => value.prop === item.prop)
+              final[propIndexInConfig] = {
                 prop: item.prop,
                 value: item.value ? item.value : '',
                 type: item.type,
@@ -338,7 +239,7 @@ export default {
     handlerCellInput({target}) {
       let value = target.value
       const {row, col} = this.cellClickIndex
-      if (this.headList[this.cellClickIndex.col].type === this.TABLE_CELL_TYPE_MAP.MONEY && !this.isNumber(value)) {
+      if (this.config[this.cellClickIndex.col].type === this.TABLE_CELL_TYPE_MAP.MONEY && !this.isNumber(value)) {
         let final = ''
         if (value.charAt(0) === '-') {
           final += '-'
@@ -351,11 +252,11 @@ export default {
         }
         value = final
       }
-      let item = this.headList[col]
+      let item = this.config[col]
       this.$set(this.tableData[row], item.prop, value)
     },
     getEditStyle() {
-      let item = this.headList[this.cellClickIndex.col]
+      let item = this.config[this.cellClickIndex.col]
       const style = {}
       if (item.canEdit) {
         style.textAlign = item.editPosition
@@ -364,16 +265,15 @@ export default {
       return style
     },
     handlerCellClick(e, row, col) {
-      // console.log(e, e.target.getBoundingClientRect())
-      const l = this.$refs['ai-table'].getBoundingClientRect()
+      // console.log(e.target.getBoundingClientRect())
       const {top, left} = e.target.getBoundingClientRect()
       const elLeft = getStyle(e.target, 'left')
       this.selectStyle = {
-        left: left - parseInt(elLeft) - l.left + 'px',
-        top: top + l.top + 'px',
+        left: left - parseInt(elLeft) + 'px',
+        top: top + 'px',
         width: e.target.offsetWidth + 'px',
       }
-      if (this.headList[col].canEdit) {
+      if (this.config[col].canEdit) {
         this.cellClickIndex = {
           row,
           col
@@ -381,15 +281,9 @@ export default {
         this.$nextTick(() => {
           this.$refs['ai-table-body-cell-input'][0].focus()
         })
-        this.showSelect = !!(this.headList[col] && this.headList[col].canSelect);
+        this.showSelect = !!(this.config[col] && this.config[col].canSelect);
       }
-      this.$emit('cell-click', {
-        row,
-        column: col,
-        cell: this.tableData[row],
-        value: this.tableData[row][this.headList[col].prop],
-        event: e
-      })
+      this.$emit('cell-click', {row, column: col, cell: this.tableData[row], value: this.tableData[row][this.config[col].prop], event: e})
     },
     getTableData() {
       const initRows = this.options.initRows
@@ -415,16 +309,13 @@ export default {
     },
     getInitObject() {
       const final = {}
-      for (const item of this.headList) {
+      for (const item of this.config) {
         final[item.prop] = ''
       }
       return final
     },
     handlerMouseOver(index) {
       this.mouseoverIndex = index
-    },
-    handlerMouseOut(index) {
-      this.mouseoverIndex = -1
     },
     transformToArray(object) {
       let final = []
@@ -450,34 +341,6 @@ export default {
       return style
     },
     /**
-     * 设置col 的宽度
-     * @param item
-     * @returns {{}}
-     */
-    setColWidth(item) {
-      let width = ''
-      if (item.type === TABLE_CELL_TYPE_MAP.MONEY) {
-        // money 类型
-        if (!item.width && item.type === TABLE_CELL_TYPE_MAP.MONEY) {
-          width = this.defaultWidth
-        }
-      } else {
-        // 其它类型
-        if (item.width) {
-          width = item.width
-        } else {
-          // 平分剩余无宽度的
-          // width = this.calcColWidth()
-          width = 150
-        }
-      }
-
-      return width
-    },
-    calcColWidth() {
-
-    },
-    /**
      * 设置 表头的 cell
      * @param item
      * @returns {{}}
@@ -499,88 +362,64 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.ai-table {
-  //position: relative;
-  //top: 0;
-  height: 500px;
-  overflow: auto;
-  box-sizing: border-box;
+.ai-table-wrapper {
+  position: relative;
+  display: table;
 
-  .ai-table_main {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ai-table_content {
-    background: #ffffff;
-
-    .ai-table_content--body {
-      width: 100%;
+  .ai-table-header {
+    .ai-table-header-body {
+      //border-bottom: 1px solid #333;
       border-right: 1px solid #333;
     }
 
-    .table-header_cell {
+    .table-header-cell {
       position: relative;
       word-wrap: normal;
       vertical-align: middle;
       width: 100%;
       font-size: 16px;
-
-      .ai-table_header_cell--text {
-        vertical-align: middle;
-      }
-
-      .icon {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        vertical-align: middle;
-      }
     }
   }
 
-  .money-unit {
+  .money_unit {
     background: url("../assets/money_rp.png") repeat-y;
-    font-size: 0;
+    font-size: 14px;
+    font-weight: normal;
     height: 22px;
     line-height: 22px;
     text-align: right;
+    min-width: 220px;
     box-sizing: border-box;
 
-    .money-unit_item {
+    .money_unit_item {
       float: left;
       display: inline;
-      width: 17px;
+      width: 19px;
       height: 100%;
-      margin-right: 3px;
+      margin-right: 1px;
       background-color: #fff;
-      font-size: 14px;
-      font-weight: normal;
     }
   }
 
-  .ai-table_operation {
+  .table-body-operation {
     background: #fff;
-
-    .operation {
-      width: 30px;
-
-      .icon {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-      }
-    }
   }
 
   .table-body-tr:hover {
     background-color: #eeeeee;
   }
 
-  .ai-table_col--operation {
+  .ai-table-left {
     width: 30px;
   }
 
+  .operation {
+    .icon {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+  }
 
   .table-body-cell {
     position: relative;
@@ -590,7 +429,6 @@ export default {
     font-size: 16px;
     height: 60px;
     line-height: 60px;
-    box-sizing: border-box;
     //padding: 4px;
 
     .table-body-cell-input {
@@ -641,7 +479,7 @@ export default {
       position: absolute;
       right: 12px;
       top: 0px;
-      z-index: 99;
+      z-index: 9999;
       font-size: 12px;
       color: #777;
       cursor: pointer;
@@ -682,12 +520,6 @@ export default {
 
   .red {
     color: red;
-  }
-
-  .ai-table_header {
-    position: relative;
-    top: 0;
-    z-index: 999;
   }
 }
 

@@ -1,13 +1,15 @@
 <template>
   <div id="app">
-    <div>
+    <div style="padding: 60px;">
       <Table :options="tableOptions" @cell-click="handlerCellClick"/>
+<!--      <Table :options="tableOptions1" @cell-click="handlerCellClick"/>-->
     </div>
   </div>
 </template>
 
 <script>
 import Table from "./components/Table";
+
 export default {
   name: 'app',
   components: {
@@ -16,23 +18,100 @@ export default {
   data () {
     return {
       tableOptions: {
-        width: '800px',
-        height: '900px',
+        // 表格高度
+        height: '600px',
         background: '',
         fontSize: '16px',
-        initRows: 5,
-        config: [
+        initRows: 7,
+        fixed: true,
+        headList: [
           {
             label: '摘要',
             prop: 'abstract',
-            width: '240px',
+            // 单元格宽度，money类型 不能设置宽度
+            width: 440,
             tip: '摘要',
             canEdit: true,
           },
           {
             label: '会计科目',
             prop: 'subject',
-            width: '240px',
+            // width: 240,
+            tip: '科目',
+            canEdit: true,
+            canSelect: true,
+            help: {
+              title: '',
+              content: '',
+              theme: 'light'
+            }
+          },
+          {
+            label: '借方金额',
+            prop: 'debtorMoney',
+            type: 'money',
+            fontSize: '14px',
+            canEdit: true,
+            editSize: '20px',
+            editPosition: 'right',
+          },
+          {
+            label: '贷方金额',
+            prop: 'creditorMoney',
+            type: 'money',
+            fontSize: '14px',
+            canEdit: true,
+            editSize: '20px',
+            editPosition: 'right',
+          },
+        ],
+        data: [
+          {
+            abstract: '765',
+            subject: 'fhyt',
+            debtorMoney: '2456',
+            creditorMoney: '-66.34',
+          },
+          {
+            abstract: '65466434242343',
+            subject: '546',
+            debtorMoney: '472',
+            creditorMoney: '5345.22',
+          },
+        ],
+        summary: {
+          title: '合计',
+          value: [
+            {
+              prop: 'debtorMoney',
+              type: 'money',
+              value: '124'
+            },
+            {
+              prop: 'creditorMoney',
+              type: 'money',
+              value: '98767687'
+            },
+          ],
+        }
+      },
+      tableOptions1: {
+        height: '800px',
+        background: '',
+        fontSize: '16px',
+        initRows: 5,
+        headList: [
+          {
+            label: '摘要1',
+            prop: 'abstract',
+            width: 340,
+            tip: '摘要',
+            canEdit: true,
+          },
+          {
+            label: '会计科目1',
+            prop: 'subject',
+            // width: 240,
             tip: '科目',
             canEdit: true,
             canSelect: true,
@@ -85,20 +164,10 @@ export default {
             },
           ],
         }
-      }
+      },
     }
   },
-  mounted() {
-    setTimeout(() => {
-      // this.tableOptions.config.push({
-      //   label: '摘要33',
-      //   prop: 'abstract',
-      //   width: '240px',
-      //   tip: '摘要',
-      //   canEdit: true,
-      // })
-    }, 3000)
-  },
+  mounted() {},
   methods: {
     handlerCellClick(d) {
       console.log(d)
@@ -117,8 +186,8 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  //margin-top: 30px;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
 h1, h2 {
