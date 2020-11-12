@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-select" :style="postion">
+  <div class="ai-select" :style="selectStyle">
     <div>
       <input type="text">
     </div>
@@ -17,7 +17,7 @@ export default {
   name: "Select",
   components: {},
   props: {
-    postion: {
+    selectStyle: {
       type: Object,
       defaut: () => {
         return {}

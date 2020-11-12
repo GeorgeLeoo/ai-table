@@ -52,9 +52,25 @@
           </td>
         </tr>
         </tbody>
+        <tfoot>
+        <tr class="table-body-tr-summary">
+          <td colspan="1" rowspan="1" class="table-body-operation"></td>
+          <td v-for="(item, i) in tableFooter" :key="i" class="table-body-td" :class="[item ? 'border-left border-bottom': 'border-bottom']">
+            <div class="table-body-cell" :class="[((item && item.type) === TABLE_CELL_TYPE_MAP.MONEY) ? 'money_unit' : '']">
+              <div v-if="item && item.value && (item.type === TABLE_CELL_TYPE_MAP.MONEY)"
+                   class="table-body-cell-main--money"
+                   :class="[item.value.length > 11 ? 'lspace-none' : '', item.value.includes('-') ? 'red' : '']">
+                {{item.value | formateMoney}}
+              </div>
+              <!--       正常的单元格         -->
+              <div v-else class="table-body-cell-main">{{(item && item.value) ? item.value : ''}}</div>
+            </div>
+          </td>
+        </tr>
+        </tfoot>
       </table>
     </div>
-    <Select :postion="postion" />
+    <Select v-if="showSelect" :select-style="selectStyle"/>
   </div>
 </template>
 
@@ -63,6 +79,7 @@ import {isArray} from "../utils/dataType";
 import Thead from "./Thead";
 import Select from "./Select";
 import {MONEY_UNIT_LIST, TABLE_CELL_TYPE_MAP, TABLE_ROW_DATA} from "../constant";
+import {getStyle} from "../utils";
 
 export default {
   name: "Table",
@@ -104,14 +121,20 @@ export default {
         col: -1
       },
       moneyColorStyle: {},
-      postion: {},
-      tableData: []
+      selectStyle: {},
+      showSelect: false,
+      tableData: [],
+      tableFooter: [],
+      tableFooterProps: []
     }
   },
   computed: {
     // 配置
     config() {
       return this.options.config
+    },
+    summary() {
+      return this.options.summary
     },
     tableHeadProp() {
       const props = {}
@@ -130,7 +153,14 @@ export default {
       return indexs
     },
   },
-  watch: {},
+  watch: {
+    tableData: {
+      handler(val) {
+
+      },
+      deep: true
+    }
+  },
   filters: {
     formateMoney(money) {
       let times = Math.pow(10, 2)
@@ -155,13 +185,53 @@ export default {
   },
   mounted() {
     this.tableData = this.getTableData()
+    this.tableFooter = this.getTableFooter()
   },
   methods: {
+    calcSummaryData() {
+      this.tableData.forEach(row => {
+        this.tableFooter.forEach(value => {
+          if (value.calc) {
+            console.log(value)
+            // this.$set(value, 'value', Number(row[value.prop]))
+          }
+        })
+      })
+    },
+    getTableFooter() {
+      const final = []
+      for (const summaryKey in this.summary) {
+        if (summaryKey === 'title') {
+          final.push({
+            prop: summaryKey,
+            value: this.summary[summaryKey],
+            type: this.summary[summaryKey].type,
+          })
+        } else if (summaryKey === 'value') {
+          if (isArray(this.summary[summaryKey])) {
+            this.summary[summaryKey].forEach(item => {
+              this.tableFooterProps.push(item.prop)
+              let propIndexInConfig = this.config.findIndex(value => value.prop === item.prop)
+              final[propIndexInConfig] = {
+                prop: item.prop,
+                value: item.value ? item.value : '',
+                type: item.type,
+                calc: true
+              }
+            })
+          } else {
+            throw Error('summary.value should be array')
+          }
+        }
+      }
+      return final
+    },
     handlerCellInputEnter() {
       this.cellClickIndex = {
         row: -1,
         col: -1,
       }
+      this.calcSummaryData()
     },
     isNumber(value) {
       return /^[1-9]\d*$/.test(value)
@@ -195,10 +265,12 @@ export default {
       return style
     },
     handlerCellClick(e, row, col) {
-      console.log(e)
-      this.postion = {
-        left: e.target.offsetLeft + 'px',
-        top: e.target.offsetTop + e.target.offsetHeight + 'px',
+      // console.log(e.target.getBoundingClientRect())
+      const {top, left} = e.target.getBoundingClientRect()
+      const elLeft = getStyle(e.target, 'left')
+      this.selectStyle = {
+        left: left - parseInt(elLeft) + 'px',
+        top: top + 'px',
         width: e.target.offsetWidth + 'px',
       }
       if (this.config[col].canEdit) {
@@ -209,7 +281,9 @@ export default {
         this.$nextTick(() => {
           this.$refs['ai-table-body-cell-input'][0].focus()
         })
+        this.showSelect = !!(this.config[col] && this.config[col].canSelect);
       }
+      this.$emit('cell-click', {row, column: col, cell: this.tableData[row], value: this.tableData[row][this.config[col].prop], event: e})
     },
     getTableData() {
       const initRows = this.options.initRows
@@ -315,6 +389,7 @@ export default {
     line-height: 22px;
     text-align: right;
     min-width: 220px;
+    box-sizing: border-box;
 
     .money_unit_item {
       float: left;
@@ -374,6 +449,7 @@ export default {
     }
 
     .table-body-cell-main {
+      position: relative;
       text-align: left;
       box-sizing: border-box;
       font-size: 14px;
@@ -389,9 +465,9 @@ export default {
       font-size: 15px;
       letter-spacing: 11px;
       position: relative;
-      right: -5px;
-      *right: 4px;
+      right: -4px;
       text-align: right;
+      box-sizing: border-box;
     }
 
     .lspace-none {

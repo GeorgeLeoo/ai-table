@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <Table :options="tableOptions"/>
+    <div>
+      <Table :options="tableOptions" @cell-click="handlerCellClick"/>
+    </div>
   </div>
 </template>
 
@@ -14,7 +16,8 @@ export default {
   data () {
     return {
       tableOptions: {
-        width: '',
+        width: '800px',
+        height: '900px',
         background: '',
         fontSize: '16px',
         initRows: 5,
@@ -66,7 +69,22 @@ export default {
             debtorMoney: '72',
             creditorMoney: '42343.22',
           },
-        ]
+        ],
+        summary: {
+          title: '合计',
+          value: [
+            {
+              prop: 'debtorMoney',
+              type: 'money',
+              value: '867'
+            },
+            {
+              prop: 'creditorMoney',
+              type: 'money',
+              value: '23123'
+            },
+          ],
+        }
       }
     }
   },
@@ -80,11 +98,20 @@ export default {
       //   canEdit: true,
       // })
     }, 3000)
+  },
+  methods: {
+    handlerCellClick(d) {
+      console.log(d)
+    }
   }
 }
 </script>
 
 <style lang="scss">
+html, body {
+  margin: 0;
+  padding: 0;
+}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
