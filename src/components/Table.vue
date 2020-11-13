@@ -1,24 +1,20 @@
 <template>
-  <div ref="ai-table" class="ai-table" :style="tableStyle">
-    <!--    <div class="ai-table_main">-->
+  <div ref="ai-table" class="ai-table" :style="tableContainerStyle">
     <!--  表头  -->
     <div class="ai-table_content ai-table_header" :style="tableHeaderStyle">
-      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0">
-        <colgroup>
-          <col class="ai-table_col--operation">
-          <col v-for="item in headColList" :key="item.key" :width="item.width">
-        </colgroup>
+      <table ref="ai-table-header" class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0"
+             :style="tableStyle">
         <thead>
         <tr>
           <td colspan="1" rowspan="1" class="ai-table_operation">
             <div class="operation"></div>
           </td>
-          <th v-for="(item, index) in headList" :key="index" class="border-top-left border-bottom">
+          <th v-for="(item, index) in headList" :key="index" class="ai-table-header-th border-top-left border-bottom" :style="item.style">
             <div class="table-header_cell" :style="item.style">
               <span class="ai-table_header_cell--text">{{item.label}}</span>
               <img v-if="item.help && item.help.content" class="icon" src="../assets/add.png" alt=""
-                   @mouseover="handlerHelpMouseOver(item.help)"
-                   @mouseout="handlerHelpMouseOut">
+                   @mouseenter="handlerHelpMouseOver(item.help)"
+                   @mouseleave="handlerHelpMouseOut">
             </div>
             <div v-if="item.isMoney" class="money-unit border-top">
                 <span v-for="(unit, unitIndex) in MONEY_UNIT_LIST" :key="unitIndex"
@@ -30,44 +26,42 @@
       </table>
     </div>
     <!--  表体  -->
-    <div class="ai-table_content">
-      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0">
-        <colgroup>
-          <col class="ai-table_col--operation">
-          <col v-for="item in headColList" :key="item.key" :width="item.width">
-        </colgroup>
-        <!--  表体  -->
+    <div class="ai-table_content" @mouseleave="handlerMouseOut">
+      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0" :style="tableStyle">
         <tbody>
         <tr v-for="(item, index) in tableData" :key="index" class="table-body-tr"
             @mouseover="handlerMouseOver(index)"
-            @mouseout="handlerMouseOut(index)">
+        >
           <td colspan="1" rowspan="1" class="ai-table_operation">
-            <div v-if="mouseoverIndex === index" class="operation">
-              <img class="icon" src="../assets/add.png" alt="" @click="handlerRowAdd(index)">
-              <img class="icon" src="../assets/del.png" alt="" @click="handlerRowDel(index)">
+            <div class="operation">
+              <template v-if="mouseoverIndex === index">
+                <img class="icon" src="../assets/add.png" alt="" @click="handlerRowAdd(index)">
+                <img class="icon" src="../assets/del.png" alt="" @click="handlerRowDel(index)">
+              </template>
             </div>
           </td>
           <td v-for="(cell, i) in transformToArray(item)" :key="i" colspan="1" rowspan="1"
-              class="table-body-td border-left border-bottom" @click="handlerCellClick($event, index, i)">
-            <div class="table-body-cell" :class="[moneyIndexs.includes(i) ? 'money-unit' : '']">
+              class="ai-table-header-td border-left border-bottom" :style="headList[i].style"
+              @click="handlerCellClick($event, index, i)">
+            <div class="table-body-cell" :class="[moneyIndexs.includes(i) ? 'money-unit' : '']"
+                 :style="headList[i].style">
               <input v-if="cellClickIndex.row === index && cellClickIndex.col === i" ref="ai-table-body-cell-input"
                      class="table-body-cell-input" :style="getEditStyle()"
                      autofocus type="text" :value="cell" @input="handlerCellInput" @keyup.enter="handlerCellInputEnter">
-              <!--              <template v-else>-->
               <!--       金额         -->
               <div v-if="headList[i] && headList[i].type === TABLE_CELL_TYPE_MAP.MONEY"
-                   class="table-body-cell-main--money"
+                   class="table-body-cell-base table-body-cell-main--money"
                    :class="[cell.length > 11 ? 'lspace-none' : '', cell.includes('-') ? 'red' : '']">
                 {{cell | formateMoney}}
               </div>
               <!--       正常的单元格         -->
-              <div v-else class="table-body-cell-main">{{cell}}</div>
-              <!--              </template>-->
+              <div v-else class="table-body-cell-base table-body-cell-main">{{cell}}</div>
               <!--       单元格右侧文案         -->
               <div v-if="mouseoverIndex === index && headList[i].tip"
                    class="table-body-cell-tip">{{headList[i].tip}}
               </div>
             </div>
+            <Select v-if="showSelect" :select-style="selectStyle"/>
           </td>
         </tr>
         </tbody>
@@ -75,18 +69,18 @@
     </div>
     <!--  表尾  -->
     <div class="ai-table_content">
-      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0">
-        <colgroup>
-          <col class="ai-table_col--operation">
-          <col v-for="item in headColList" :key="item.key" :width="item.width">
-        </colgroup>
+      <table class="ai-table_content--body" cellspacing="0" cellpadding="0" border="0" :style="tableStyle">
         <tfoot>
         <tr class="table-body-tr-summary">
-          <td colspan="1" rowspan="1" class="ai-table_operation"></td>
-          <td v-for="(item, i) in tableFooter" :key="i" class="table-body-td"
-              :class="[item ? 'border-left border-bottom': 'border-bottom']">
+          <td colspan="1" rowspan="1" class="ai-table_operation">
+            <div class="operation"></div>
+          </td>
+          <td v-for="(item, i) in tableFooter" :key="i" class="ai-table-header-td"
+              :class="[item ? 'border-left border-bottom': 'border-left-white border-bottom']"
+              :style="headList[i].style">
             <div class="table-body-cell"
-                 :class="[((item && item.type) === TABLE_CELL_TYPE_MAP.MONEY) ? 'money-unit' : '']">
+                 :class="[((item && item.type) === TABLE_CELL_TYPE_MAP.MONEY) ? 'money-unit' : '']"
+                 :style="headList[i].style">
               <div v-if="item && item.value && (item.type === TABLE_CELL_TYPE_MAP.MONEY)"
                    class="table-body-cell-main--money"
                    :class="[item.value.length > 11 ? 'lspace-none' : '', item.value.includes('-') ? 'red' : '']">
@@ -100,8 +94,6 @@
         </tfoot>
       </table>
     </div>
-    <!--    </div>-->
-    <Select v-if="showSelect" :select-style="selectStyle"/>
     <!--    <Popover v-if="popOverContent.content" :data="popOverContent"></Popover>-->
   </div>
 </template>
@@ -147,7 +139,7 @@ export default {
       TABLE_CELL_TYPE_MAP,
       MONEY_UNIT_LIST,
       // 默认cell宽度
-      defaultWidth: 222,
+      defaultWidth: '222px',
       defaultFontSize: '22px',
       mouseoverIndex: -1,
       cellClickIndex: {
@@ -164,6 +156,32 @@ export default {
     }
   },
   computed: {
+    tableStyle() {
+      let sumWidth = 30 + this.headColList.length
+      for (const ele of this.headColList) {
+        if (ele.width) {
+          sumWidth += parseInt(ele.width.replace('px', ''))
+        } else {
+          sumWidth = parseInt(this.defaultWidth.replace('px', ''))
+        }
+      }
+      return {
+        minWidth: sumWidth + 'px'
+      }
+    },
+    /**
+     * table 的样式
+     */
+    tableContainerStyle() {
+      const style = {}
+      if (this.options.height) {
+        style.height = this.options.height
+      }
+      if (this.options.fixed) {
+        style.position = 'sticky'
+      }
+      return style
+    },
     // 表头配置
     headList() {
       const headList = this.options.headList
@@ -190,19 +208,6 @@ export default {
         })
       }
       return final
-    },
-    /**
-     * table 的样式
-     */
-    tableStyle() {
-      const style = {}
-      if (this.options.height) {
-        style.height = this.options.height
-      }
-      if (this.options.fixed) {
-        style.position = 'sticky'
-      }
-      return style
     },
     /**
      * table 表头 的样式
@@ -233,18 +238,18 @@ export default {
       })
       return indexs
     },
-    calcRestWidth() {
-      let sumWidth = 0
-      let totalWidth = ''
-      console.log(this.$refs['ai-table'])
-      for (const ele of this.headList) {
-        if (ele.type === TABLE_CELL_TYPE_MAP.MONEY) {
-          sumWidth += 220
-        } else if (ele.width) {
-          sumWidth = parseInt(ele.width)
-        }
-      }
-    }
+    // calcRestWidth() {
+    //   let sumWidth = 0
+    //   let totalWidth = ''
+    //   // console.log(this.$refs['ai-table'])
+    //   for (const ele of this.headList) {
+    //     if (ele.type === TABLE_CELL_TYPE_MAP.MONEY) {
+    //       sumWidth += 220
+    //     } else if (ele.width) {
+    //       sumWidth = parseInt(ele.width)
+    //     }
+    //   }
+    // }
   },
   watch: {
     tableData: {
@@ -279,8 +284,41 @@ export default {
   mounted() {
     this.tableData = this.getTableData()
     this.tableFooter = this.getTableFooter()
+    this.resize()
+    this.addListenerClick()
   },
   methods: {
+    addListenerClick() {
+      window.addEventListener('click', (e) => {
+        console.log(e.target.className)
+        const className = e.target.className
+        if (!className.includes('table-body-cell-base') && !className.includes('table-body-cell')) {
+          this.cellClickIndex = {
+            row: -1,
+            col: -1,
+          }
+          this.showSelect = false
+        }
+      })
+    },
+    resize() {
+      window.addEventListener('resize', () => {
+        this.calcRestWidth()
+      })
+    },
+    calcRestWidth() {
+      const aiTableEl = this.$refs['ai-table-header']
+      let elWidth = aiTableEl.offsetWidth
+      let sumWidth = 30
+      for (const ele of this.headList) {
+        if (ele.width) {
+          sumWidth += parseInt(ele.width.replace('px', ''))
+        } else if (ele.type === TABLE_CELL_TYPE_MAP.MONEY) {
+          sumWidth += 200
+        }
+      }
+      return elWidth - sumWidth
+    },
     handlerHelpMouseOut() {
       // this.popOverContent = ''
     },
@@ -291,7 +329,7 @@ export default {
       this.tableData.forEach(row => {
         this.tableFooter.forEach(value => {
           if (value.calc) {
-            console.log(value)
+            // console.log(value)
             // this.$set(value, 'value', Number(row[value.prop]))
           }
         })
@@ -364,15 +402,19 @@ export default {
       return style
     },
     handlerCellClick(e, row, col) {
-      // console.log(e, e.target.getBoundingClientRect())
       const l = this.$refs['ai-table'].getBoundingClientRect()
       const {top, left} = e.target.getBoundingClientRect()
       const elLeft = getStyle(e.target, 'left')
       this.selectStyle = {
-        left: left - parseInt(elLeft) - l.left + 'px',
+        left: left - parseInt(elLeft) + 'px',
         top: top + l.top + 'px',
         width: e.target.offsetWidth + 'px',
       }
+      // this.selectStyle = {
+      //   left: 0,
+      //   top: 0,
+      //   width: e.target.offsetWidth + 'px',
+      // }
       if (this.headList[col].canEdit) {
         this.cellClickIndex = {
           row,
@@ -437,10 +479,12 @@ export default {
     },
     /**
      * col 的宽度
-     * @param item
-     * @returns {{}}
+     * @param index
+     * @returns {number}
      */
-    setColStyle(item) {
+    setColStyle(index) {
+      let item = this.headColList[index]
+      // console.log(item)
       const style = {}
       if (item.width) {
         style.width = item.width
@@ -468,7 +512,7 @@ export default {
         } else {
           // 平分剩余无宽度的
           // width = this.calcColWidth()
-          width = 150
+          width = this.defaultWidth
         }
       }
 
@@ -484,13 +528,21 @@ export default {
      */
     setHeaderCellStyle(item) {
       const style = {}
-      const {fontSize} = item
+      const {fontSize, width} = item
       if (fontSize) {
         style.fontSize = fontSize
       } else if (this.options.fontSize) {
         style.fontSize = this.options.fontSize
       } else {
         style.fontSize = this.defaultFontSize
+      }
+      console.log(item)
+      if (item.width) {
+        style.width = width
+      } else {
+        if (item.type === TABLE_CELL_TYPE_MAP.MONEY) {
+          style.width = this.defaultWidth
+        }
       }
       return style
     },
@@ -561,6 +613,7 @@ export default {
 
   .ai-table_operation {
     background: #fff;
+    width: 30px;
 
     .operation {
       width: 30px;
@@ -672,6 +725,10 @@ export default {
     border-left: 1px solid #333;
   }
 
+  .border-left-white {
+    border-left: 1px solid transparent;
+  }
+
   .border-bottom {
     border-bottom: 1px solid #333;
   }
@@ -689,6 +746,13 @@ export default {
     top: 0;
     z-index: 999;
   }
+  .ai-table-header-th {
+    width: 100%;
+  }
+  .ai-table-header-td {
+    width: 100%;
+  }
+  .table-body-cell-base {}
 }
 
 </style>

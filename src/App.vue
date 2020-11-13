@@ -22,14 +22,14 @@ export default {
         height: '600px',
         background: '',
         fontSize: '16px',
-        initRows: 7,
-        fixed: true,
+        initRows: 5,
+        fixed: false,
         headList: [
           {
             label: '摘要',
             prop: 'abstract',
             // 单元格宽度，money类型 不能设置宽度
-            width: 440,
+            width: '340px',
             tip: '摘要',
             canEdit: true,
           },
@@ -104,7 +104,7 @@ export default {
           {
             label: '摘要1',
             prop: 'abstract',
-            width: 340,
+            width: '340px',
             tip: '摘要',
             canEdit: true,
           },
