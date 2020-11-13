@@ -20,10 +20,41 @@ export default {
       tableOptions: {
         // 表格高度
         height: '600px',
+        maxHeight: '800px',
         background: '',
         fontSize: '16px',
         initRows: 5,
         fixed: false,
+        select: {
+          height: '200px',
+          url: '',
+          list: [
+            {
+              key: '3123',
+              value: 'dasd'
+            },
+            {
+              key: '65',
+              value: '9hgf'
+            },
+            {
+              key: '98',
+              value: 'sadasdf'
+            },
+            {
+              key: '3123',
+              value: 'dasd'
+            },
+            {
+              key: '65',
+              value: '9hgf'
+            },
+            {
+              key: '98',
+              value: 'sadasdf'
+            },
+          ]
+        },
         headList: [
           {
             label: '摘要',
@@ -67,30 +98,30 @@ export default {
         ],
         data: [
           {
-            abstract: '765',
+            abstract: 'nm',
             subject: 'fhyt',
             debtorMoney: '2456',
             creditorMoney: '-66.34',
           },
           {
-            abstract: '65466434242343',
-            subject: '546',
+            abstract: '到那时到那时到那时到那时到那时到那时到那时到那时到那时到那时32到那时到那时到那时到那时到那时到那时到那时到那时',
+            subject: '到那时到那时到那时到那时到那时到那时到那时到那时到那时到那时32到那时到那时到那时到那时到那时到那时到那时到那时',
             debtorMoney: '472',
             creditorMoney: '5345.22',
           },
         ],
         summary: {
-          title: '合计',
+          title: '合计:',
           value: [
             {
               prop: 'debtorMoney',
               type: 'money',
-              value: '124'
+              value: ''
             },
             {
               prop: 'creditorMoney',
               type: 'money',
-              value: '98767687'
+              value: ''
             },
           ],
         }

@@ -42,12 +42,13 @@
           </td>
           <td v-for="(cell, i) in transformToArray(item)" :key="i" colspan="1" rowspan="1"
               class="ai-table-header-td border-left border-bottom" :style="headList[i].style"
+              :class="[moneyIndexs.includes(i) ? 'money-unit' : '']"
               @click="handlerCellClick($event, index, i)">
-            <div class="table-body-cell" :class="[moneyIndexs.includes(i) ? 'money-unit' : '']"
+            <div class="table-body-cell"
                  :style="headList[i].style">
               <input v-if="cellClickIndex.row === index && cellClickIndex.col === i" ref="ai-table-body-cell-input"
-                     class="table-body-cell-input" :style="getEditStyle()"
-                     autofocus type="text" :value="cell" @input="handlerCellInput" @keyup.enter="handlerCellInputEnter">
+                     class="table-body-cell-input" :class="[(cellClickIndex.row === index && cellClickIndex.col === i) ? 'pr30' : '']" :style="getEditStyle(headList[i].style)"
+                     autofocus type="tel" :value="cell" @input="handlerCellInput" @keyup.enter="handlerCellInputEnter">
               <!--       金额         -->
               <div v-if="headList[i] && headList[i].type === TABLE_CELL_TYPE_MAP.MONEY"
                    class="table-body-cell-base table-body-cell-main--money"
@@ -55,13 +56,14 @@
                 {{cell | formateMoney}}
               </div>
               <!--       正常的单元格         -->
-              <div v-else class="table-body-cell-base table-body-cell-main">{{cell}}</div>
+              <div v-else class="table-body-cell-base table-body-cell-main" :style="headList[i].style">{{cell}}</div>
               <!--       单元格右侧文案         -->
               <div v-if="mouseoverIndex === index && headList[i].tip"
-                   class="table-body-cell-tip">{{headList[i].tip}}
+                   class="table-body-cell-tip">
+                <span>{{headList[i].tip}}</span>
               </div>
             </div>
-            <Select v-if="showSelect" :select-style="selectStyle"/>
+            <Select v-if="showSelect" :options="selectOptions" :select-style="selectStyle" @select="handlerSelect"/>
           </td>
         </tr>
         </tbody>
@@ -79,15 +81,16 @@
               :class="[item ? 'border-left border-bottom': 'border-left-white border-bottom']"
               :style="headList[i].style">
             <div class="table-body-cell"
-                 :class="[((item && item.type) === TABLE_CELL_TYPE_MAP.MONEY) ? 'money-unit' : '']"
+                 :class="[moneyIndexs.includes(i) ? 'money-unit' : '']"
                  :style="headList[i].style">
               <div v-if="item && item.value && (item.type === TABLE_CELL_TYPE_MAP.MONEY)"
-                   class="table-body-cell-main--money"
-                   :class="[item.value.length > 11 ? 'lspace-none' : '', item.value.includes('-') ? 'red' : '']">
+                   class="table-body-cell-base table-body-cell-main--money"
+                   :class="[item.value.length > 11 ? 'lspace-none' : '', hasMinus(item) ? 'red' : '']">
+<!--                (item && item.value && item.value.includes('-')) ? 'red' : ''-->
                 {{item.value | formateMoney}}
               </div>
               <!--       正常的单元格         -->
-              <div v-else class="table-body-cell-main">{{(item && item.value) ? item.value : ''}}</div>
+              <div v-else class="table-body-cell-base table-body-cell-main">{{(item && item.value) ? item.value : ''}}</div>
             </div>
           </td>
         </tr>
@@ -156,6 +159,13 @@ export default {
     }
   },
   computed: {
+    selectOptions() {
+      let selectOptions = {}
+      if (this.options.select) {
+        selectOptions = this.options.select
+      }
+      return selectOptions
+    },
     tableStyle() {
       let sumWidth = 30 + this.headColList.length
       for (const ele of this.headColList) {
@@ -238,18 +248,6 @@ export default {
       })
       return indexs
     },
-    // calcRestWidth() {
-    //   let sumWidth = 0
-    //   let totalWidth = ''
-    //   // console.log(this.$refs['ai-table'])
-    //   for (const ele of this.headList) {
-    //     if (ele.type === TABLE_CELL_TYPE_MAP.MONEY) {
-    //       sumWidth += 220
-    //     } else if (ele.width) {
-    //       sumWidth = parseInt(ele.width)
-    //     }
-    //   }
-    // }
   },
   watch: {
     tableData: {
@@ -284,13 +282,20 @@ export default {
   mounted() {
     this.tableData = this.getTableData()
     this.tableFooter = this.getTableFooter()
-    this.resize()
+    // this.resize()
     this.addListenerClick()
+    this.calcSummaryData()
   },
   methods: {
+    handlerSelect(item) {
+      let data = this.headList[this.cellClickIndex.col]
+      this.$set(this.tableData[this.cellClickIndex.row], data.prop, item.value)
+    },
+    hasMinus(item) {
+      return item && (item.value + '').includes('-')
+    },
     addListenerClick() {
       window.addEventListener('click', (e) => {
-        console.log(e.target.className)
         const className = e.target.className
         if (!className.includes('table-body-cell-base') && !className.includes('table-body-cell')) {
           this.cellClickIndex = {
@@ -326,13 +331,23 @@ export default {
       // this.popOverContent = help
     },
     calcSummaryData() {
-      this.tableData.forEach(row => {
-        this.tableFooter.forEach(value => {
-          if (value.calc) {
-            // console.log(value)
-            // this.$set(value, 'value', Number(row[value.prop]))
+      const map = {}
+      this.tableFooterProps.forEach(footer => {
+        this.tableData.forEach(row => {
+          if (map[footer]) {
+            map[footer] += Number(row[footer])
+          } else {
+            map[footer] = Number(row[footer])
           }
         })
+      })
+      this.tableFooter.forEach(item => {
+        for (const key in map) {
+          if (item && key === item.prop) {
+            this.$set(item, 'value', map[key])
+            break
+          }
+        }
       })
     },
     getTableFooter() {
@@ -368,6 +383,7 @@ export default {
         row: -1,
         col: -1,
       }
+      this.showSelect = false
       this.calcSummaryData()
     },
     isNumber(value) {
@@ -381,6 +397,9 @@ export default {
         if (value.charAt(0) === '-') {
           final += '-'
         }
+        if (value.charAt(0) === '.') {
+          final += '.'
+        }
         for (let i = 0; i < value.length; i++) {
           let v = value.charAt(i)
           if (!Number.isNaN(v / 1)) {
@@ -392,9 +411,9 @@ export default {
       let item = this.headList[col]
       this.$set(this.tableData[row], item.prop, value)
     },
-    getEditStyle() {
+    getEditStyle(s) {
       let item = this.headList[this.cellClickIndex.col]
-      const style = {}
+      const style = {...s}
       if (item.canEdit) {
         style.textAlign = item.editPosition
         style.fontSize = item.editSize
@@ -402,6 +421,11 @@ export default {
       return style
     },
     handlerCellClick(e, row, col) {
+      const className = e.target.className
+      console.log(className)
+      if (className.includes('ai-custom-el')) {
+        return
+      }
       const l = this.$refs['ai-table'].getBoundingClientRect()
       const {top, left} = e.target.getBoundingClientRect()
       const elLeft = getStyle(e.target, 'left')
@@ -410,11 +434,6 @@ export default {
         top: top + l.top + 'px',
         width: e.target.offsetWidth + 'px',
       }
-      // this.selectStyle = {
-      //   left: 0,
-      //   top: 0,
-      //   width: e.target.offsetWidth + 'px',
-      // }
       if (this.headList[col].canEdit) {
         this.cellClickIndex = {
           row,
@@ -484,7 +503,6 @@ export default {
      */
     setColStyle(index) {
       let item = this.headColList[index]
-      // console.log(item)
       const style = {}
       if (item.width) {
         style.width = item.width
@@ -536,7 +554,6 @@ export default {
       } else {
         style.fontSize = this.defaultFontSize
       }
-      console.log(item)
       if (item.width) {
         style.width = width
       } else {
@@ -636,15 +653,16 @@ export default {
 
 
   .table-body-cell {
+    display: table;
     position: relative;
     word-wrap: normal;
     vertical-align: middle;
     width: 100%;
     font-size: 16px;
     height: 60px;
-    line-height: 60px;
     box-sizing: border-box;
-    //padding: 4px;
+    //line-height: 60px;
+    //padding: 15px 0;
 
     .table-body-cell-input {
       position: absolute;
@@ -691,18 +709,30 @@ export default {
     }
 
     .table-body-cell-tip {
+      display: table-cell;
+      vertical-align: middle;
+      height: 100%;
       position: absolute;
-      right: 12px;
-      top: 0px;
+      right: 16px;
+      //top: 0;
       z-index: 99;
       font-size: 12px;
       color: #777;
       cursor: pointer;
       user-select: none;
+      text-align: center;
 
       &:hover {
         color: #333;
         text-decoration: underline;
+      }
+
+      span {
+        width: 30px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
     }
   }
@@ -752,7 +782,13 @@ export default {
   .ai-table-header-td {
     width: 100%;
   }
-  .table-body-cell-base {}
+  .table-body-cell-base {
+    width: 100%;
+    height: 100%;
+    display: table-cell;
+    vertical-align: middle;
+    word-break: break-all;
+  }
 }
 
 </style>
